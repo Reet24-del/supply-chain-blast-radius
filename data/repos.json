@@ -1,0 +1,30 @@
+{
+  "_comment": "Lockfiles are real and public (fetched from GitHub). Teams and on-call channels are synthetic: a fictional company that owns these repos for the demo.",
+  "teams": [
+    {"name": "devtools", "oncall": "@devtools-oncall", "channel": "#devtools-incidents"},
+    {"name": "web", "oncall": "@web-oncall", "channel": "#web-incidents"},
+    {"name": "apps", "oncall": "@apps-oncall", "channel": "#apps-incidents"},
+    {"name": "platform", "oncall": "@platform-oncall", "channel": "#platform-incidents"}
+  ],
+  "repos": [
+    {"name": "uptime-kuma", "github": "louislam/uptime-kuma", "team": "apps"},
+    {"name": "typescript", "github": "microsoft/TypeScript", "team": "devtools"},
+    {"name": "playwright", "github": "microsoft/playwright", "team": "devtools"},
+    {"name": "puppeteer", "github": "puppeteer/puppeteer", "team": "devtools"},
+    {"name": "github-docs", "github": "github/docs", "team": "web"},
+    {"name": "pdf.js", "github": "mozilla/pdf.js", "team": "web"},
+    {"name": "shields", "github": "badges/shields", "team": "platform"},
+    {"name": "open-webui", "github": "open-webui/open-webui", "team": "web"},
+    {"name": "jellyfin-web", "github": "jellyfin/jellyfin-web", "team": "web"},
+    {"name": "insomnia", "github": "Kong/insomnia", "team": "devtools"},
+    {"name": "npm-cli", "github": "npm/cli", "team": "devtools"},
+    {"name": "bitwarden-clients", "github": "bitwarden/clients", "team": "apps"},
+    {"name": "openzeppelin-contracts", "github": "OpenZeppelin/openzeppelin-contracts", "team": "platform"},
+    {"name": "jitsi-meet", "github": "jitsi/jitsi-meet", "team": "apps"},
+    {"name": "vscode", "github": "microsoft/vscode", "team": "devtools"},
+    {"name": "expensify-app", "github": "Expensify/App", "team": "apps"},
+    {"name": "nightscout", "github": "nightscout/cgm-remote-monitor", "team": "platform"}
+  ],
+  "_watch_comment": "Advisories loaded even when no lockfile pins an affected version. MAL-2025-46974 is the Sep 8 2025 hijack of debug@4.4.2.",
+  "watch_advisories": ["MAL-2025-46974"]
+}

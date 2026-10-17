@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "blast-web",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": [
+        "run",
+        "blast-web"
+      ],
+      "port": 8000
+    }
+  ]
+}

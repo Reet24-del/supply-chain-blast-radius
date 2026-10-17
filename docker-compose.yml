@@ -1,0 +1,15 @@
+services:
+  falkordb:
+    # Server + FalkorDB Browser. Pin a specific tag before recording the demo.
+    image: falkordb/falkordb:latest
+    ports:
+      - "127.0.0.1:6379:6379" # FalkorDB (Redis protocol)
+      - "127.0.0.1:3000:3000" # FalkorDB Browser -> http://localhost:3000
+    environment:
+      - REDIS_ARGS=--appendonly yes
+    volumes:
+      - falkordb_data:/data
+    restart: unless-stopped
+
+volumes:
+  falkordb_data:
