@@ -3,7 +3,7 @@
 **A maintainer gets phished. Which of your repos are hit, through which dependency path, and who has to fix it?**
 An agent that answers from a FalkorDB graph of your real, installed dependency trees, and shows the path behind every answer.
 
-> Demo video: TODO · Live demo: TODO · Blog post: TODO
+> Demo video: TODO · Live demo: TODO · Blog post: TODO ([draft](docs/blog-post.md))
 > Built for [Graph Hacks: Context for AI Agents](https://www.wemakedevs.org/hackathons/falkordb) (FalkorDB × WeMakeDevs).
 
 ## Why this needs a graph
@@ -36,8 +36,8 @@ multi-hop traversal.
 
 ## Tracks entered
 
-- Track 01: Agents That Act on Connected Data (primary)
-- Track 02: Agent Memory and Coordination (TODO: decide before submitting)
+- **Track 01: Agents That Act on Connected Data (primary).** Every answer is a multi-hop traversal. Graph queries and algorithms (`shortestPath`, `algo.SPpaths`, `algo.pageRank`) are the agent's tools, chosen over MCP. The agent acts by suggesting `overrides` fixes and drafting issues for owning teams, and every result carries its path.
+- **Track 02: Agent Memory and Coordination.** Triage decisions are dated `Decision` nodes linked to the package, repo or advisory they concern. They come back with later answers and in later sessions. Every client of the MCP server shares them through the graph: the web agent, Claude Code and Claude Desktop. Each company (tenant) gets **its own isolated graph** on the same FalkorDB instance, so its dependencies and its memory never mix with another company's. The server pins the tenant to each chat session; the model never sees or chooses it.
 
 ## Architecture
 
@@ -172,15 +172,26 @@ Connect an agent over MCP (Claude Code shown; any MCP client works):
 claude mcp add blast-radius -- uv run --directory "$PWD" blast-mcp
 ```
 
+### One graph per company
+
+Each tenant's data lives in its own graph, `supplychain:<tenant>`, on the same FalkorDB instance (FalkorDB multigraph). Load a second, fictional company, Orbit, with 5 of the repos:
+
+```bash
+uv run blast-ingest --tenant orbit --repos data/tenants/orbit.json --reset
+```
+
+The UI then shows a **Company** picker, or open `/?tenant=orbit` directly. A chat session is bound to its tenant. The web agent hides the tools' `tenant` argument from the model and fills it from the session, so the model can't reach another company's graph. External MCP clients see the `tenant` argument; leave it empty for the default graph.
+
 ## Deploy (FalkorDB Cloud + Render, both free)
 
 **1. The graph, on FalkorDB Cloud (Free tier).** Create a free instance (AWS or GCP, no card). From the console, copy the endpoint (`host:port`) and the FalkorDB password (user `falkordb`) into `.env` as `FALKORDB_HOST`, `FALKORDB_PORT` and `FALKORDB_PASSWORD`. Then load the graph from your machine. The empty `FALKORDB_LITE_PATH=` switches from the embedded engine to the server:
 
 ```bash
 FALKORDB_LITE_PATH= uv run blast-ingest --reset   # ~25 s with data/cache, ~3 min from a fresh clone
+FALKORDB_LITE_PATH= uv run blast-ingest --tenant orbit --repos data/tenants/orbit.json --reset
 ```
 
-The graph needs about 19 MB of the tier's 100 MB. Free-tier caveats:
+The default graph needs about 19 MB of the tier's 100 MB, and Orbit's is about a third of that size. Free-tier caveats:
 
 - There's no TLS, so leave `FALKORDB_TLS` unset; set it to `true` on paid tiers.
 - There's **no persistence**: a restart empties the graph, so re-run the command above.
@@ -202,7 +213,12 @@ The graph needs about 19 MB of the tier's 100 MB. Free-tier caveats:
 
 ## AI assistance
 
-TODO (required by the rules): name the coding assistants used and what the team wrote, reviewed and changed by hand.
+This project was built during the event (October 16–18, 2026) with **Claude Code** (Anthropic) as a coding assistant. It helped choose the idea, then wrote most of the first version from our direction: the lockfile parser and ingestion, the Cypher queries, the MCP tools, the agent loop, the web UI, the deployment config, and drafts of this README and the blog post. At runtime, the web agent calls Claude (`claude-opus-5-5`).
+
+<!-- TEAM: before submitting, replace this line with what you wrote, reviewed, tested or changed
+     yourselves, in your own words. The rules ask that you can explain the graph model, the
+     queries and the architecture. -->
+_What we did ourselves: TODO._
 
 ## Before submitting
 
@@ -211,4 +227,4 @@ TODO (required by the rules): name the coding assistants used and what the team 
 - [ ] Deploy: create the FalkorDB Cloud instance, load the graph, create the Render Blueprint, set `APP_URL` (see Deploy)
 - [ ] 2-minute demo video following `scripts/demo.py`
 - [ ] Blog post (separate prize)
-- [ ] One graph per tenant (FalkorDB multigraph) if entering Track 02
+- [x] One graph per tenant (FalkorDB multigraph) for Track 02

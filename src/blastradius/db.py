@@ -1,6 +1,14 @@
-"""FalkorDB connection: a server (Docker / FalkorDB Cloud) or embedded FalkorDBLite."""
+"""FalkorDB connection: a server (Docker / FalkorDB Cloud) or embedded FalkorDBLite.
+
+Each tenant (a company and its repos) gets its own graph on the same instance, named
+`<FALKORDB_GRAPH>:<tenant>`. Queries go to the graph selected with `use_tenant`, so one
+tenant's dependencies and memory never mix with another's.
+"""
 
 import os
+import re
+from contextlib import contextmanager
+from contextvars import ContextVar
 from functools import lru_cache
 from pathlib import Path
 
@@ -9,6 +17,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 GRAPH_NAME = os.getenv("FALKORDB_GRAPH", "supplychain")
+TENANT_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,31}$")
+_current_graph: ContextVar[str] = ContextVar("current_graph", default=GRAPH_NAME)
 # Server-side limit for agent reads, so one bad traversal can't stall the agent loop.
 READ_TIMEOUT_MS = int(os.getenv("FALKORDB_READ_TIMEOUT_MS", "10000"))
 
@@ -42,8 +52,42 @@ def _db():
     )
 
 
-def graph(name: str = GRAPH_NAME):
-    return _db().select_graph(name)
+def graph(name: str | None = None):
+    return _db().select_graph(name or _current_graph.get())
+
+
+def tenants() -> list[str]:
+    """Tenants that have a graph on this instance (the default graph is not listed)."""
+    prefix = f"{GRAPH_NAME}:"
+    return sorted(name.removeprefix(prefix) for name in _db().list_graphs() if name.startswith(prefix))
+
+
+def graph_name(tenant: str = "", *, must_exist: bool = True) -> str:
+    """The graph holding a tenant's data; "" is the default graph. Raises ValueError if invalid."""
+    if not tenant:
+        return GRAPH_NAME
+    if not TENANT_RE.match(tenant):
+        raise ValueError(f"'{tenant}' is not a valid tenant name (lowercase letters, digits and dashes)")
+    if must_exist and tenant not in tenants():
+        raise ValueError(f"No tenant named '{tenant}'. Known tenants: {', '.join(tenants()) or 'none'}")
+    return f"{GRAPH_NAME}:{tenant}"
+
+
+@contextmanager
+def _use_graph(name: str):
+    token = _current_graph.set(name)
+    try:
+        yield name
+    finally:
+        _current_graph.reset(token)
+
+
+def use_tenant(tenant: str = "", *, must_exist: bool = True):
+    """Point graph() and rows() at one tenant's graph inside a `with` block.
+
+    Validates when called, so a bad tenant fails before the block starts.
+    """
+    return _use_graph(graph_name(tenant, must_exist=must_exist))
 
 
 def ensure_indexes(g) -> None:

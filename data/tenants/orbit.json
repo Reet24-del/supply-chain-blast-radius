@@ -1,0 +1,15 @@
+{
+  "_comment": "A second, fictional company with its own isolated graph: uv run blast-ingest --tenant orbit --repos data/tenants/orbit.json. Lockfiles are real and public; teams are synthetic.",
+  "teams": [
+    {"name": "core", "oncall": "@orbit-core-oncall", "channel": "#orbit-core"},
+    {"name": "web", "oncall": "@orbit-web-oncall", "channel": "#orbit-web"}
+  ],
+  "repos": [
+    {"name": "uptime-kuma", "github": "louislam/uptime-kuma", "team": "core"},
+    {"name": "nightscout", "github": "nightscout/cgm-remote-monitor", "team": "core"},
+    {"name": "openzeppelin-contracts", "github": "OpenZeppelin/openzeppelin-contracts", "team": "core"},
+    {"name": "pdf.js", "github": "mozilla/pdf.js", "team": "web"},
+    {"name": "shields", "github": "badges/shields", "team": "web"}
+  ],
+  "watch_advisories": ["MAL-2025-46974"]
+}

@@ -28,6 +28,8 @@ const FACTS = {
 };
 const QUIET_KEYS = new Set(['outcome', 'query_ms', 'note', 'error', 'suggestions', 'query']);
 
+// Each company (tenant) has its own isolated graph; the choice lives in the URL so it's linkable.
+const tenant = new URLSearchParams(location.search).get('tenant') || '';
 let sessionId = null;
 let busy = false;
 
@@ -338,7 +340,7 @@ async function ask(question) {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: question, session_id: sessionId }),
+      body: JSON.stringify({ message: question, session_id: sessionId, tenant }),
     });
     if (!res.ok || !res.body) {
       const detail = (await res.json().catch(() => ({}))).detail;
@@ -371,7 +373,13 @@ async function ask(question) {
 
 async function loadHealth() {
   try {
-    const s = await (await fetch('/api/health')).json();
+    const res = await fetch(`/api/health?tenant=${encodeURIComponent(tenant)}`);
+    const s = await res.json();
+    if (!res.ok) {
+      $('#stats').textContent = s.detail || 'Graph unavailable.';
+      return;
+    }
+    showTenants(s.tenants || []);
     if (!s.nodes.Repo) {
       $('#stats').textContent = 'The graph is empty. Load it with blast-ingest (see the README).';
       return;
@@ -385,6 +393,17 @@ async function loadHealth() {
   } catch {
     $('#stats').textContent = 'Graph unavailable. Is FalkorDB running?';
   }
+}
+
+function showTenants(names) {
+  if (!names.length) return; // only the default graph: no picker
+  const select = $('#tenant');
+  select.replaceChildren(
+    h('option', { value: '', text: 'Default' }),
+    ...names.map((name) => h('option', { value: name, text: name })),
+  );
+  select.value = tenant;
+  $('#tenant-picker').hidden = false;
 }
 
 function autosize() {
@@ -410,6 +429,10 @@ input.addEventListener('keydown', (e) => {
   }
 });
 input.addEventListener('input', autosize);
+$('#tenant').addEventListener('change', (e) => {
+  const value = e.target.value;
+  location.search = value ? `?tenant=${encodeURIComponent(value)}` : '';
+});
 $('#new').addEventListener('click', () => {
   if (!busy) location.reload();
 });

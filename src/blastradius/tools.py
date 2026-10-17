@@ -11,6 +11,8 @@ queries.py, and returns the dependency path with every answer. Every result has 
   recorded / drafted / opened   a write: a Decision node, an outbox draft, a GitHub issue
 """
 
+import functools
+import inspect
 import os
 import uuid
 from datetime import datetime, timezone
@@ -21,7 +23,7 @@ import httpx
 import semantic_version as sv
 
 from . import queries as Q
-from .db import rows
+from .db import rows, use_tenant
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTBOX = ROOT / "outbox"
@@ -329,17 +331,42 @@ def open_issue(repo: str, title: str, body: str) -> dict:
     return {"outcome": outcome, "repo": name, "url": url, "owner": owner}
 
 
+def tenant_scoped(fn):
+    """Expose a tool with an extra `tenant` argument that runs it against that tenant's graph.
+
+    The web agent fills `tenant` from the chat session and hides it from the model, so the
+    model can't reach another tenant's data. Empty means the default graph.
+    """
+
+    @functools.wraps(fn)
+    def tool(*args, tenant: str = "", **kwargs):
+        try:
+            scope = use_tenant(tenant)
+        except ValueError as e:
+            return {"outcome": "unknown_tenant", "query": tenant, "note": str(e)}
+        with scope:
+            return fn(*args, **kwargs)
+
+    sig = inspect.signature(fn)
+    tenant_param = inspect.Parameter("tenant", inspect.Parameter.KEYWORD_ONLY, default="", annotation=str)
+    tool.__signature__ = sig.replace(parameters=[*sig.parameters.values(), tenant_param])
+    return tool
+
+
 READ_TOOLS = [
-    find_package,
-    direct_dependents,
-    blast_radius,
-    maintainer_blast_radius,
-    fresh_install_exposure,
-    advisory_impact,
-    repo_advisories,
-    dependency_paths,
-    load_bearing_packages,
-    who_owns,
-    recall,
+    tenant_scoped(fn)
+    for fn in (
+        find_package,
+        direct_dependents,
+        blast_radius,
+        maintainer_blast_radius,
+        fresh_install_exposure,
+        advisory_impact,
+        repo_advisories,
+        dependency_paths,
+        load_bearing_packages,
+        who_owns,
+        recall,
+    )
 ]
-WRITE_TOOLS = [record_decision, open_issue]
+WRITE_TOOLS = [tenant_scoped(fn) for fn in (record_decision, open_issue)]

@@ -35,10 +35,15 @@ user decides something or asks you to act.
 
 def _claude_tool(tool) -> dict:
     d = tool.model_dump(by_alias=True, exclude_none=True)
+    schema = dict(d["inputSchema"])
+    # The tenant comes from the chat session (see run_turn), never from the model.
+    schema["properties"] = {k: v for k, v in schema.get("properties", {}).items() if k != "tenant"}
+    if "required" in schema:
+        schema["required"] = [k for k in schema["required"] if k != "tenant"]
     return {
         "name": d["name"],
         "description": d.get("description", ""),
-        "input_schema": d["inputSchema"],
+        "input_schema": schema,
         # Inputs stream as generated; the MCP server validates them before any tool runs.
         "eager_input_streaming": True,
     }
@@ -87,8 +92,11 @@ class Agent:
         c = self.claude
         return bool(c.api_key or c.auth_token or c.credentials)
 
-    async def run_turn(self, history: list, user_text: str) -> AsyncIterator[dict]:
-        """Append one user turn to `history` (append-only) and stream events until Claude is done."""
+    async def run_turn(self, history: list, user_text: str, tenant: str = "") -> AsyncIterator[dict]:
+        """Append one user turn to `history` (append-only) and stream events until Claude is done.
+
+        Every tool call runs against `tenant`'s graph, whatever the model put in its input.
+        """
         if not self.has_credentials:
             yield {"type": "error", "message": "No Anthropic credentials: add ANTHROPIC_API_KEY to .env and restart."}
             return
@@ -168,7 +176,8 @@ class Agent:
                     payload, is_error = {"INVALID_JSON": json.dumps(block.input)}, True
                 else:
                     try:
-                        payload, is_error = _tool_payload(await self.mcp.call_tool(block.name, block.input))
+                        args = {**block.input, "tenant": tenant}
+                        payload, is_error = _tool_payload(await self.mcp.call_tool(block.name, args))
                     except Exception as e:  # e.g. a graph query timeout; tell the model, keep going
                         payload, is_error = {"error": str(e)}, True
                 yield {"type": "tool_result", "id": block.id, "name": block.name, "result": payload, "is_error": is_error}

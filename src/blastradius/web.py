@@ -24,7 +24,7 @@ from redis.exceptions import RedisError
 
 from . import queries as Q
 from .agent import EFFORT, MODEL, Agent
-from .db import rows
+from .db import graph_name, rows, tenants, use_tenant
 
 STATIC = Path(__file__).parent / "web"
 MAX_SESSIONS = 200
@@ -37,7 +37,7 @@ VISITOR_WINDOW_S = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "600"))
 DAILY_LIMIT = int(os.getenv("DAILY_QUESTION_LIMIT", "400"))
 
 agent = Agent()
-sessions: OrderedDict[str, list] = OrderedDict()
+sessions: OrderedDict[str, tuple[str, list]] = OrderedDict()  # id -> (tenant, history)
 locks: dict[str, asyncio.Lock] = {}
 visits: dict[str, deque] = {}
 daily = {"day": None, "count": 0}
@@ -74,29 +74,44 @@ app = FastAPI(title="Supply-chain blast radius", lifespan=lifespan)
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=4000)
     session_id: str | None = None
+    tenant: str = ""
 
 
-def _session(session_id: str | None) -> tuple[str, list]:
-    sid = session_id if session_id in sessions else uuid.uuid4().hex
-    history = sessions.setdefault(sid, [])
-    sessions.move_to_end(sid)
+def _check_tenant(tenant: str) -> None:
+    try:
+        graph_name(tenant)
+    except ValueError as e:
+        raise HTTPException(404, str(e))
+
+
+def _session(session_id: str | None, tenant: str) -> tuple[str, list]:
+    """A chat session is bound to the tenant it started with; switching tenants starts a new one."""
+    if session_id not in sessions or sessions[session_id][0] != tenant:
+        session_id = uuid.uuid4().hex
+        sessions[session_id] = (tenant, [])
+    sessions.move_to_end(session_id)
     while len(sessions) > MAX_SESSIONS:
         old, _ = sessions.popitem(last=False)
         locks.pop(old, None)
-    return sid, history
+    return session_id, sessions[session_id][1]
 
 
 @app.get("/api/health")
-def health() -> dict:
+def health(tenant: str = "") -> dict:
     # An empty or unreachable graph is reported, not raised: the service itself is up, and a
     # failing health check would make the host restart it in a loop.
     try:
-        nodes = {r["label"]: r["n"] for r in rows(Q.COUNT_NODES)}
-        edges = {r["type"]: r["n"] for r in rows(Q.COUNT_EDGES)}
+        known = tenants()
+        _check_tenant(tenant)
+        with use_tenant(tenant):
+            nodes = {r["label"]: r["n"] for r in rows(Q.COUNT_NODES)}
+            edges = {r["type"]: r["n"] for r in rows(Q.COUNT_EDGES)}
         graph_error = None
     except RedisError as e:
-        nodes, edges, graph_error = {}, {}, str(e)
+        known, nodes, edges, graph_error = [], {}, {}, str(e)
     return {
+        "tenant": tenant,
+        "tenants": known,
         "nodes": nodes,
         "edges": edges,
         "graph_error": graph_error,
@@ -109,8 +124,9 @@ def health() -> dict:
 
 @app.post("/api/chat")
 async def chat(req: ChatRequest, request: Request) -> StreamingResponse:
+    _check_tenant(req.tenant)
     _rate_limit(request.client.host if request.client else "unknown")
-    sid, history = _session(req.session_id)
+    sid, history = _session(req.session_id, req.tenant)
     lock = locks.setdefault(sid, asyncio.Lock())
 
     async def events():
@@ -119,7 +135,7 @@ async def chat(req: ChatRequest, request: Request) -> StreamingResponse:
             yield json.dumps({"type": "error", "message": "This chat is full. Start a new chat."}) + "\n"
             return
         async with lock:
-            async for event in agent.run_turn(history, req.message):
+            async for event in agent.run_turn(history, req.message, tenant=req.tenant):
                 yield json.dumps(event, default=str) + "\n"
 
     return StreamingResponse(events(), media_type="application/x-ndjson")

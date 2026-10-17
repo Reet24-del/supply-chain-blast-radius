@@ -87,6 +87,16 @@ header {
 .brand strong { font-size: 17px; }
 .brand span, .meta span { color: var(--muted); font-size: 13px; }
 .meta { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+#tenant-picker { color: var(--muted); font-size: 13px; display: flex; gap: 6px; align-items: center; }
+#tenant-picker[hidden] { display: none; }
+#tenant {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
 
 main { max-width: 1320px; margin: 0 auto; padding: 22px 16px 150px; }
 

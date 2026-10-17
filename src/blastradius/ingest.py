@@ -3,6 +3,7 @@
     uv run blast-ingest                      # repos listed in data/repos.json
     uv run blast-ingest --reset              # drop and rebuild the graph
     uv run blast-ingest --skip-maintainers   # skip one npm registry request per package
+    uv run blast-ingest --tenant orbit --repos data/tenants/orbit.json   # a second, isolated graph
 
 Downloads are cached in data/cache/, so re-runs are fast and work offline.
 """
@@ -17,7 +18,7 @@ from pathlib import Path
 import httpx
 
 from . import queries as Q
-from .db import GRAPH_NAME, ensure_indexes, graph, rows
+from .db import ensure_indexes, graph, rows, use_tenant
 from .lockfile import ParsedLock, parse_lockfile
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -179,8 +180,13 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--reset", action="store_true", help="drop the graph before loading")
     ap.add_argument("--skip-osv", action="store_true", help="don't fetch advisories from OSV.dev")
     ap.add_argument("--skip-maintainers", action="store_true", help="don't fetch maintainers from npm")
+    ap.add_argument("--tenant", default="", help="load into this tenant's own graph (default: the shared graph)")
     args = ap.parse_args(argv)
+    with use_tenant(args.tenant, must_exist=False) as name:
+        ingest(args, name)
 
+
+def ingest(args: argparse.Namespace, name: str) -> None:
     cfg = json.loads(args.repos.read_text())
     g = graph()
     if args.reset:
@@ -215,7 +221,7 @@ def main(argv: list[str] | None = None) -> None:
 
     nodes = ", ".join(f"{r['n']} {r['label']}" for r in rows(Q.COUNT_NODES))
     edges = ", ".join(f"{r['n']} {r['type']}" for r in rows(Q.COUNT_EDGES))
-    print(f"graph '{GRAPH_NAME}': {nodes}\n  {edges}\ndone in {time.perf_counter() - started:.0f}s")
+    print(f"graph '{name}': {nodes}\n  {edges}\ndone in {time.perf_counter() - started:.0f}s")
 
 
 if __name__ == "__main__":
