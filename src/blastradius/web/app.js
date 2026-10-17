@@ -340,7 +340,10 @@ async function ask(question) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: question, session_id: sessionId }),
     });
-    if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok || !res.body) {
+      const detail = (await res.json().catch(() => ({}))).detail;
+      throw new Error(typeof detail === 'string' ? detail : `Request failed (HTTP ${res.status}).`);
+    }
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
@@ -356,7 +359,8 @@ async function ask(question) {
       }
     }
   } catch (err) {
-    handle(t, { type: 'error', message: `Request failed: ${err.message}` });
+    // fetch rejects with a TypeError when the server can't be reached at all
+    handle(t, { type: 'error', message: err instanceof TypeError ? "Couldn't reach the server." : err.message });
   } finally {
     t.status.hidden = true;
     busy = false;
@@ -368,6 +372,10 @@ async function ask(question) {
 async function loadHealth() {
   try {
     const s = await (await fetch('/api/health')).json();
+    if (!s.nodes.Repo) {
+      $('#stats').textContent = 'The graph is empty. Load it with blast-ingest (see the README).';
+      return;
+    }
     $('#stats').textContent =
       `${fmt(s.nodes.Repo)} repos · ${fmt(s.nodes.Version)} versions · ` +
       `${fmt(s.edges.DEPENDS_ON)} dependency edges · ${fmt(s.nodes.Advisory)} advisories`;

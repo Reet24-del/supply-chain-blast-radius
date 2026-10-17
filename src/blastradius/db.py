@@ -38,6 +38,7 @@ def _db():
         port=int(os.getenv("FALKORDB_PORT", "6379")),
         username=os.getenv("FALKORDB_USERNAME") or None,
         password=os.getenv("FALKORDB_PASSWORD") or None,
+        ssl=os.getenv("FALKORDB_TLS", "").lower() in ("1", "true", "yes"),  # paid Cloud tiers; Free has no TLS
     )
 
 

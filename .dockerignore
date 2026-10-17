@@ -1,0 +1,11 @@
+.git/
+.github/
+.claude/
+.venv/
+.env
+.falkordb/
+data/cache/
+outbox/
+tests/
+**/__pycache__/
+.pytest_cache/

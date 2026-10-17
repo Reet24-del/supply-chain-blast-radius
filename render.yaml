@@ -1,0 +1,26 @@
+# Render Blueprint (free tier): Dashboard > New > Blueprint > pick this repo.
+# Values marked `sync: false` are asked for once, in the dashboard; they never live in git.
+services:
+  - type: web
+    name: blast-radius
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: FALKORDB_HOST
+        sync: false
+      - key: FALKORDB_PORT
+        sync: false
+      - key: FALKORDB_USERNAME
+        value: falkordb
+      - key: FALKORDB_PASSWORD
+        sync: false
+      - key: RATE_LIMIT_PER_VISITOR
+        value: "15"
+      - key: RATE_LIMIT_WINDOW_SECONDS
+        value: "600"
+      - key: DAILY_QUESTION_LIMIT
+        value: "400"

@@ -172,6 +172,27 @@ Connect an agent over MCP (Claude Code shown; any MCP client works):
 claude mcp add blast-radius -- uv run --directory "$PWD" blast-mcp
 ```
 
+## Deploy (FalkorDB Cloud + Render, both free)
+
+**1. The graph, on FalkorDB Cloud (Free tier).** Create a free instance (AWS or GCP, no card). From the console, copy the endpoint (`host:port`) and the FalkorDB password (user `falkordb`) into `.env` as `FALKORDB_HOST`, `FALKORDB_PORT` and `FALKORDB_PASSWORD`. Then load the graph from your machine. The empty `FALKORDB_LITE_PATH=` switches from the embedded engine to the server:
+
+```bash
+FALKORDB_LITE_PATH= uv run blast-ingest --reset   # ~25 s with data/cache, ~3 min from a fresh clone
+```
+
+The graph needs about 19 MB of the tier's 100 MB. Free-tier caveats:
+
+- There's no TLS, so leave `FALKORDB_TLS` unset; set it to `true` on paid tiers.
+- There's **no persistence**: a restart empties the graph, so re-run the command above.
+- An instance unused for a day is stopped, and after 7 days it's deleted. The keep-alive below prevents that.
+
+**2. The app, on Render (free).** In the Render dashboard, choose New > Blueprint and pick this repo. Render reads [`render.yaml`](render.yaml), builds the [`Dockerfile`](Dockerfile), and asks once for `ANTHROPIC_API_KEY`, `FALKORDB_HOST`, `FALKORDB_PORT` and `FALKORDB_PASSWORD`. `/api/health` shows the graph's node counts; if the graph is empty or unreachable, `graph_error` says why. A free instance sleeps after 15 minutes idle, so the next visit takes about a minute. The same image runs on any container host: set the same variables, and it listens on `$PORT`.
+
+**3. Limits and keep-alive.**
+
+- **Rate limits.** Every question spends your Anthropic credits, so the server allows `RATE_LIMIT_PER_VISITOR` questions (15) per `RATE_LIMIT_WINDOW_SECONDS` (600) per visitor. It also caps everyone together at `DAILY_QUESTION_LIMIT` (400 a day). Set a monthly spend limit in the Anthropic Console as well.
+- **Keep-alive.** The Free tier stops an instance after a day without use, so ping `/api/health` at least once a day; a free uptime monitor every 6 hours works. Each ping runs a graph query. If `nodes` comes back without `"Repo"`, the graph is empty and needs re-loading.
+
 ## Data sources
 
 - **Lockfiles:** public `package-lock.json` files from 17 open-source repos (`data/repos.json`), fetched once and cached in `data/cache/`. Pin `ref` per repo for a reproducible demo.
@@ -187,7 +208,7 @@ TODO (required by the rules): name the coding assistants used and what the team 
 
 - [x] Agent loop and UI: chat on the left, the hop-by-hop path rendered on the right
 - [ ] Run the chat once with a real `ANTHROPIC_API_KEY` and tune the system prompt in `agent.py`
-- [ ] Deploy (FalkorDB Cloud + any host) or keep the local setup above
+- [ ] Deploy: create the FalkorDB Cloud instance, load the graph, create the Render Blueprint, set `APP_URL` (see Deploy)
 - [ ] 2-minute demo video following `scripts/demo.py`
 - [ ] Blog post (separate prize)
 - [ ] One graph per tenant (FalkorDB multigraph) if entering Track 02
