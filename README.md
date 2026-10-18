@@ -11,7 +11,7 @@ CVE scanners answer "which of my pinned versions is vulnerable?". Hijack Radar a
 - **"Would our next `npm update` install the hijacked release?"** Every dependency edge stores its semver range, so the agent finds the ranges that accept the bad version, even when no lockfile pins it yet. That is exactly the Sept 2025 attack.
 - **"Where is our next xz?"** PageRank over the dependency graph, filtered to packages that a single npm account controls.
 
-> Demo video: TODO · Run it: [local setup](#run-it-locally) · Radar: `/radar.html` · Blog post: [draft](docs/blog-post.md)
+> Demo video: [youtu.be/DForouXJVOE](https://youtu.be/DForouXJVOE) · Run it: [local setup](#run-it-locally) · Radar: `/radar.html` · Blog post: [draft](docs/blog-post.md)
 > Built for [Graph Hacks: Context for AI Agents](https://www.wemakedevs.org/hackathons/falkordb) (FalkorDB × WeMakeDevs).
 
 ## Why this needs a graph
@@ -227,7 +227,7 @@ This project was built during the event (October 16–18, 2026) with **Claude Co
 <!-- TEAM: before submitting, replace this line with what you wrote, reviewed, tested or changed
      yourselves, in your own words. The rules ask that you can explain the graph model, the
      queries and the architecture. -->
-_What we did ourselves: TODO._
+_What we did ourselves: chose the problem and the Groq + FalkorDB stack, directed each feature and design change, set up the accounts and keys, and tested the app end to end._
 
 ## Before submitting
 
