@@ -11,7 +11,7 @@ CVE scanners answer "which of my pinned versions is vulnerable?". Hijack Radar a
 - **"Would our next `npm update` install the hijacked release?"** Every dependency edge stores its semver range, so the agent finds the ranges that accept the bad version, even when no lockfile pins it yet. That is exactly the Sept 2025 attack.
 - **"Where is our next xz?"** PageRank over the dependency graph, filtered to packages that a single npm account controls.
 
-> Demo video: [youtu.be/DForouXJVOE](https://youtu.be/DForouXJVOE) · Run it: [local setup](#run-it-locally) · Radar: `/radar.html` · Blog post: [draft](docs/blog-post.md)
+> Demo video: [youtu.be/DForouXJVOE](https://youtu.be/DForouXJVOE) · Run it: [local setup](#run-it-locally) · Radar: `/radar.html` · Blog post: [dev.to](https://dev.to/reet_singh_ee97da2986538e/hijack-radar-your-lockfile-said-you-were-safe-your-dependency-graph-knew-better-4741)
 > Built for [Graph Hacks: Context for AI Agents](https://www.wemakedevs.org/hackathons/falkordb) (FalkorDB × WeMakeDevs).
 
 ## Why this needs a graph
