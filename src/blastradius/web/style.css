@@ -69,6 +69,7 @@ button {
 }
 button:disabled { opacity: 0.5; cursor: default; }
 button.ghost { background: transparent; color: var(--text); border-color: var(--border); }
+.radar-link { color: var(--text); text-decoration: none; border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; }
 
 header {
   position: sticky;

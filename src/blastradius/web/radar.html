@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hijack Radar</title>
+  <style>
+    :root {
+      --bg: #070b10; --panel: #0d141d; --text: #e6edf3; --muted: #8b98a8; --border: #1c2836;
+      --grid: #1a3a2c; --sweep: #3ddc84; --safe: #2b3a4a; --hit: #ff4d4f; --hit-glow: rgba(255, 77, 79, 0.35);
+      --accent: #3ddc84; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: radial-gradient(circle at 30% 40%, #0c1a14 0, var(--bg) 60%); color: var(--text);
+           font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; min-height: 100vh; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 16px 28px; }
+    header strong { font-size: 18px; letter-spacing: 0.02em; }
+    header strong span { color: var(--accent); }
+    a.cta, button { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--border); }
+    a.cta { color: #04130b; background: var(--accent); padding: 9px 16px; text-decoration: none; font-weight: 600; border: 0; }
+    main { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 32px; align-items: center;
+           max-width: 1240px; margin: 0 auto; padding: 8px 28px 40px; }
+    @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+    svg { width: 100%; height: auto; max-width: 620px; display: block; margin: 0 auto; overflow: visible; }
+    .ring { fill: none; stroke: var(--grid); stroke-width: 1; }
+    .ring-label { fill: #3f6b55; font: 10px var(--mono); }
+    .spoke { stroke: var(--grid); stroke-width: 0.6; }
+    .dot { fill: var(--safe); transition: fill 0.3s, r 0.3s; }
+    .dot.hit { fill: var(--hit); filter: drop-shadow(0 0 6px var(--hit-glow)); }
+    .repo-label { fill: var(--muted); font: 10.5px var(--mono); pointer-events: none; transition: fill 0.3s; }
+    .repo-label.hit { fill: #ffb3b3; }
+    .core { fill: var(--hit); }
+    .core-label { fill: var(--text); font: 600 11px var(--mono); }
+    .pulse { fill: none; stroke: var(--hit); opacity: 0; }
+    h1 { font-size: 40px; line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.02em; }
+    h1 em { font-style: normal; color: var(--hit); }
+    .lede { color: var(--muted); margin: 0 0 22px; font-size: 16px; }
+    .scenarios { display: grid; gap: 8px; margin-bottom: 22px; }
+    .scenarios button { text-align: left; background: var(--panel); color: var(--text); padding: 11px 14px; }
+    .scenarios button:hover { border-color: #2f4a3c; }
+    .scenarios button.active { border-color: var(--hit); box-shadow: 0 0 0 1px var(--hit) inset; }
+    .counter { font: 600 48px var(--mono); color: var(--hit); line-height: 1; }
+    .counter small { font-size: 18px; color: var(--muted); }
+    .sub { color: var(--muted); margin: 6px 0 14px; min-height: 1.5em; }
+    .sub b { color: var(--text); }
+    .path { font: 12.5px var(--mono); background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+            padding: 10px 12px; min-height: 42px; color: var(--muted); overflow-wrap: anywhere; }
+    .path .repo { color: #7cc4ff; } .path .bad { color: var(--hit); } .path .sep { color: #3f6b55; margin: 0 6px; }
+    footer { text-align: center; color: var(--muted); font-size: 13px; padding: 0 20px 28px; }
+    footer b { color: var(--text); }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>Hijack <span>Radar</span></strong>
+    <a class="cta" href="/">Ask the agent →</a>
+  </header>
+  <main>
+    <svg id="radar" viewBox="-330 -330 660 660" role="img" aria-label="Radar of the 17 repos; rings are dependency hops from the compromised package"></svg>
+    <section>
+      <h1>A maintainer gets phished.<br><em>What did you just install?</em></h1>
+      <p class="lede">Each dot is one of 17 real open-source repos. Each ring is one dependency hop from the compromised package. Pick an attack and watch the sweep.</p>
+      <div class="scenarios" id="scenarios"></div>
+      <div class="counter" id="counter">0<small> / 17 repos exposed</small></div>
+      <p class="sub" id="sub">&nbsp;</p>
+      <div class="path" id="path">Hover a red dot to see the exact path the graph found.</div>
+    </section>
+  </main>
+  <footer>Traced through a <b>FalkorDB</b> graph of real lockfiles: 11,179 package versions · 33,233 dependency edges · every answer shows its path.</footer>
+
+  <script>
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.getElementById('radar');
+    const RINGS = [70, 140, 210, 280]; // hop 1, 2, 3, then "not reached"
+    const el = (tag, attrs, parent = svg) => {
+      const n = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+      parent.appendChild(n);
+      return n;
+    };
+
+    // grid: rings, labels, spokes
+    RINGS.forEach((r, i) => {
+      el('circle', { r, class: 'ring' });
+      el('text', { x: 6, y: -r + 13, class: 'ring-label' }).textContent = i < 3 ? `${i + 1} hop${i ? 's' : ''}` : 'not reached';
+    });
+    for (let a = 0; a < 360; a += 30) {
+      const rad = (a * Math.PI) / 180;
+      el('line', { x1: 0, y1: 0, x2: 300 * Math.cos(rad), y2: 300 * Math.sin(rad), class: 'spoke' });
+    }
+
+    // sweep wedge with a fading gradient
+    const defs = el('defs', {});
+    const grad = el('linearGradient', { id: 'sweep', x1: '0', y1: '0', x2: '1', y2: '0' }, defs);
+    el('stop', { offset: '0%', 'stop-color': '#3ddc84', 'stop-opacity': '0' }, grad);
+    el('stop', { offset: '100%', 'stop-color': '#3ddc84', 'stop-opacity': '0.35' }, grad);
+    const sweep = el('g', {});
+    const W = 300, A = (40 * Math.PI) / 180;
+    el('path', { d: `M0 0 L${W} 0 A${W} ${W} 0 0 0 ${W * Math.cos(-A)} ${W * Math.sin(-A)} Z`, fill: 'url(#sweep)' }, sweep);
+    el('line', { x1: 0, y1: 0, x2: W, y2: 0, stroke: '#3ddc84', 'stroke-width': 1.5 }, sweep);
+
+    const pulse = el('circle', { r: 20, class: 'pulse' });
+    el('circle', { r: 16, class: 'core' });
+    const coreLabel = el('text', { y: 32, 'text-anchor': 'middle', class: 'core-label' });
+
+    let data, dots = [], active = null, hits = 0, angle = 0;
+
+    function placeRepos() {
+      const n = data.repos.length;
+      dots = data.repos.map((name, i) => {
+        const deg = (i * 360) / n - 90;
+        const g = el('g', {});
+        const dot = el('circle', { r: 6, class: 'dot' }, g);
+        const label = el('text', { class: 'repo-label' }, g);
+        label.textContent = name;
+        const d = { name, deg: ((deg % 360) + 360) % 360, g, dot, label, hit: null, lit: false };
+        move(d, RINGS[3]);
+        dot.addEventListener('mouseenter', () => showPath(d));
+        return d;
+      });
+    }
+
+    function move(d, r) {
+      const rad = (d.deg * Math.PI) / 180;
+      const x = r * Math.cos(rad), y = r * Math.sin(rad);
+      d.dot.setAttribute('cx', x); d.dot.setAttribute('cy', y);
+      const right = Math.cos(rad) >= 0;
+      d.label.setAttribute('x', x + (right ? 10 : -10));
+      d.label.setAttribute('y', y + 4);
+      d.label.setAttribute('text-anchor', right ? 'start' : 'end');
+    }
+
+    function showPath(d) {
+      const box = document.getElementById('path');
+      if (!d.hit) { box.textContent = `${d.name}: not reached in this scenario.`; return; }
+      box.replaceChildren(...d.hit.path.flatMap((hop, i) => {
+        const s = document.createElement('span');
+        s.className = i === 0 ? 'repo' : i === d.hit.path.length - 1 ? 'bad' : '';
+        s.textContent = hop;
+        if (!i) return [s];
+        const sep = document.createElement('span'); sep.className = 'sep'; sep.textContent = '›';
+        return [sep, s];
+      }));
+    }
+
+    function choose(s, button) {
+      active = s; hits = 0; angle = -90;
+      document.querySelectorAll('.scenarios button').forEach((b) => b.classList.toggle('active', b === button));
+      coreLabel.textContent = s.source;
+      for (const d of dots) {
+        d.hit = s.hits[d.name] || null; d.lit = false;
+        d.dot.classList.remove('hit'); d.label.classList.remove('hit');
+        move(d, d.hit ? RINGS[Math.min(d.hit.depth, 3) - 1] : RINGS[3]);
+      }
+      const direct = dots.filter((d) => d.hit && d.hit.depth === 1).length;
+      document.getElementById('sub').innerHTML = s.kind === 'release'
+        ? `No lockfile pins it, yet <b>${s.ranges} version ranges</b> accept it: the next <code>npm update</code> pulls it in.`
+        : `<b>${s.packages} packages</b> this account can publish · only <b>${direct}</b> repos depend on one directly.`;
+      document.getElementById('counter').firstChild.textContent = '0';
+      document.getElementById('path').textContent = 'Hover a red dot to see the exact path the graph found.';
+    }
+
+    function frame() {
+      angle = (angle + 1.2) % 360;
+      sweep.setAttribute('transform', `rotate(${angle})`);
+      if (active) {
+        const a = ((angle % 360) + 360) % 360;
+        for (const d of dots) {
+          if (d.hit && !d.lit && Math.abs(((a - d.deg + 540) % 360) - 180) < 2) {
+            d.lit = true; hits += 1;
+            d.dot.classList.add('hit'); d.label.classList.add('hit');
+            document.getElementById('counter').firstChild.textContent = String(hits);
+          }
+        }
+        pulse.setAttribute('opacity', 0.5 + 0.5 * Math.sin(Date.now() / 300));
+        pulse.setAttribute('r', 20 + 6 * Math.sin(Date.now() / 300));
+      }
+      requestAnimationFrame(frame);
+    }
+
+    fetch('radar-data.json').then((r) => r.json()).then((json) => {
+      data = json;
+      placeRepos();
+      const box = document.getElementById('scenarios');
+      json.scenarios.forEach((s, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = s.label;
+        b.addEventListener('click', () => choose(s, b));
+        box.appendChild(b);
+        if (i === 0) setTimeout(() => choose(s, b), 600);
+      });
+      requestAnimationFrame(frame);
+    });
+  </script>
+</body>
+</html>

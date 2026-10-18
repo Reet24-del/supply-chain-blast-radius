@@ -3,6 +3,8 @@
 **An npm maintainer gets phished and a release is hijacked. What did you just install, including what your lockfile says is safe?**
 Hijack Radar is an agent that traces account takeovers and hijacked releases through a FalkorDB graph of your real, installed dependency trees, and shows the path behind every answer.
 
+**Radar view** (`/radar.html`): the 17 repos as dots on a radar, with one ring per dependency hop. Pick an attack, such as a phished maintainer or the Sept 2025 `debug@4.4.2` hijack, and the sweep lights up every exposed repo on the ring where the graph reaches it.
+
 CVE scanners answer "which of my pinned versions is vulnerable?". Hijack Radar answers the questions they can't:
 
 - **"If this maintainer's account is phished, what can the attacker publish into our repos?"** Maintainers are nodes, so an account takeover is a traversal from a person to packages to every repo that reaches them.
