@@ -310,7 +310,7 @@ def open_issue(repo: str, title: str, body: str) -> dict:
     full_title = f"[{name}] {title}"
     full_body = (
         f"{body}\n\n---\nOwner: {owner['team']} ({owner['oncall']}, {owner['channel']})\n"
-        "Opened by the supply-chain blast radius agent."
+        "Opened by Hijack Radar."
     )
     token, target = os.getenv("GITHUB_TOKEN"), os.getenv("DEMO_ISSUES_REPO")
     if token and target:

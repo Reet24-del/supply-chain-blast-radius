@@ -1,1 +1,1 @@
-"""Supply-chain blast radius agent: FalkorDB graph + fixed MCP tool catalogue."""
+"""Hijack Radar: phished maintainers and hijacked npm releases, traced through a FalkorDB graph."""

@@ -1,7 +1,7 @@
 [project]
-name = "supply-chain-blast-radius"
+name = "hijack-radar"
 version = "0.1.0"
-description = "An agent that traces npm supply-chain compromises through a FalkorDB dependency graph"
+description = "Hijack Radar: an agent that traces phished npm maintainers and hijacked releases through a FalkorDB dependency graph"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -13,6 +13,7 @@ dependencies = [
   "anthropic>=1.15",
   "fastapi>=0.140",
   "uvicorn>=0.30",
+  "groq>=0.30",
 ]
 
 [project.optional-dependencies]

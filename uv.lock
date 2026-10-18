@@ -270,6 +270,15 @@ wheels = [
 ]
 
 [[package]]
+name = "distro"
+version = "1.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fc/f8/98eea607f65de6527f8a2e8885fc8015d3e6f5775df186e443e0964a11c3/distro-1.9.0.tar.gz", hash = "sha256:2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed", size = 60722, upload-time = "2023-12-24T09:54:32.31Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/12/b3/231ffd4ab1fc9d679809f356cebee130ac7daa00d6d6f3206dd4fd137e9e/distro-1.9.0-py3-none-any.whl", hash = "sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2", size = 20277, upload-time = "2023-12-24T09:54:30.421Z" },
+]
+
+[[package]]
 name = "docstring-parser"
 version = "0.18.0"
 source = { registry = "https://pypi.org/simple" }
@@ -332,6 +341,23 @@ wheels = [
 ]
 
 [[package]]
+name = "groq"
+version = "1.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "distro" },
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "sniffio" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0c/c1/20cb719bc21aa22df185c4aa60abc17680d7067d41fe0ca3fda98b75822b/groq-1.7.0.tar.gz", hash = "sha256:d582dbb3f071b92ca339baba83af9f57ba6f46a51c34b04565d7cb9badb2785b", size = 158918, upload-time = "2026-08-26T02:36:19.734Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3f/f6/c3d8ea3194d7d7d8292edd4dbb4b6832d29c2eab04887dda4a742e83902c/groq-1.7.0-py3-none-any.whl", hash = "sha256:cb1518f823423d4e52445859eb7d2918a927794cec12f8d5e50d9161e3690fc8", size = 143797, upload-time = "2026-08-26T02:36:18.497Z" },
+]
+
+[[package]]
 name = "h11"
 version = "0.16.0"
 source = { registry = "https://pypi.org/simple" }
@@ -339,6 +365,50 @@ sdist = { url = "https://files.pythonhosted.org/packages/01/ee/02a2c011bdab74c6f
 wheels = [
     { url = "https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86", size = 37515, upload-time = "2025-04-24T03:35:24.344Z" },
 ]
+
+[[package]]
+name = "hijack-radar"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "anthropic" },
+    { name = "falkordb" },
+    { name = "fastapi" },
+    { name = "groq" },
+    { name = "httpx" },
+    { name = "mcp" },
+    { name = "python-dotenv" },
+    { name = "semantic-version" },
+    { name = "uvicorn" },
+]
+
+[package.optional-dependencies]
+lite = [
+    { name = "falkordblite", marker = "python_full_version >= '3.12'" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "anthropic", specifier = ">=1.15" },
+    { name = "falkordb", specifier = ">=1.8" },
+    { name = "falkordblite", marker = "python_full_version >= '3.12' and extra == 'lite'", specifier = ">=0.10" },
+    { name = "fastapi", specifier = ">=0.140" },
+    { name = "groq", specifier = ">=0.30" },
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "mcp", specifier = ">=2.3" },
+    { name = "python-dotenv", specifier = ">=1.0" },
+    { name = "semantic-version", specifier = ">=2.10" },
+    { name = "uvicorn", specifier = ">=0.30" },
+]
+provides-extras = ["lite"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8" }]
 
 [[package]]
 name = "httpcore"
@@ -1131,48 +1201,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/e9/0c/6efb252d091ecccd7
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c1/b0/5742e4ac7af5eb58ec3470a537a49d7aa507e5539413e504b3a65ef50ba8/starlette-1.8.0-py3-none-any.whl", hash = "sha256:dfdd6b29c26483288088d990eee59631dedadd66ce20d203402a7ca8e3c4656f", size = 79612, upload-time = "2026-10-13T07:54:38.019Z" },
 ]
-
-[[package]]
-name = "supply-chain-blast-radius"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "anthropic" },
-    { name = "falkordb" },
-    { name = "fastapi" },
-    { name = "httpx" },
-    { name = "mcp" },
-    { name = "python-dotenv" },
-    { name = "semantic-version" },
-    { name = "uvicorn" },
-]
-
-[package.optional-dependencies]
-lite = [
-    { name = "falkordblite", marker = "python_full_version >= '3.12'" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "anthropic", specifier = ">=1.15" },
-    { name = "falkordb", specifier = ">=1.8" },
-    { name = "falkordblite", marker = "python_full_version >= '3.12' and extra == 'lite'", specifier = ">=0.10" },
-    { name = "fastapi", specifier = ">=0.140" },
-    { name = "httpx", specifier = ">=0.27" },
-    { name = "mcp", specifier = ">=2.3" },
-    { name = "python-dotenv", specifier = ">=1.0" },
-    { name = "semantic-version", specifier = ">=2.10" },
-    { name = "uvicorn", specifier = ">=0.30" },
-]
-provides-extras = ["lite"]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=8" }]
 
 [[package]]
 name = "truststore"

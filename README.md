@@ -1,7 +1,13 @@
-# Supply-chain blast radius
+# Hijack Radar
 
-**A maintainer gets phished. Which of your repos are hit, through which dependency path, and who has to fix it?**
-An agent that answers from a FalkorDB graph of your real, installed dependency trees, and shows the path behind every answer.
+**An npm maintainer gets phished and a release is hijacked. What did you just install, including what your lockfile says is safe?**
+Hijack Radar is an agent that traces account takeovers and hijacked releases through a FalkorDB graph of your real, installed dependency trees, and shows the path behind every answer.
+
+CVE scanners answer "which of my pinned versions is vulnerable?". Hijack Radar answers the questions they can't:
+
+- **"If this maintainer's account is phished, what can the attacker publish into our repos?"** Maintainers are nodes, so an account takeover is a traversal from a person to packages to every repo that reaches them.
+- **"Would our next `npm update` install the hijacked release?"** Every dependency edge stores its semver range, so the agent finds the ranges that accept the bad version, even when no lockfile pins it yet. That is exactly the Sept 2025 attack.
+- **"Where is our next xz?"** PageRank over the dependency graph, filtered to packages that a single npm account controls.
 
 > Demo video: TODO · Live demo: TODO · Blog post: TODO ([draft](docs/blog-post.md))
 > Built for [Graph Hacks: Context for AI Agents](https://www.wemakedevs.org/hackathons/falkordb) (FalkorDB × WeMakeDevs).
@@ -28,9 +34,10 @@ multi-hop traversal.
 
 ## What the agent can do
 
-- **Blast radius** of a package, an advisory (GHSA / CVE / MAL id) or a hijacked maintainer account, at any depth, with the exact chain per repo.
-- **Fresh-install exposure:** would a lockfile refresh pull a bad release? It checks the semver range stored on each dependency edge.
+- **Phished-account reach:** everything a hijacked npm account can publish into, at any depth, with the exact chain per repo.
+- **Fresh-install exposure:** would a lockfile refresh pull a hijacked release? It checks the semver range stored on each dependency edge.
 - **Where is our next xz?** Ranks the most depended-on packages that only one npm account can publish (PageRank).
+- **Blast radius** of any package or advisory (GHSA, CVE or malicious-package `MAL-` id), at any depth, with the path for each repo.
 - **Memory:** triage decisions are dated `Decision` nodes linked to the repo, package or advisory, and come back with later answers.
 - **Act:** suggests an npm `overrides` fix and opens an issue for the owning team (drafted to `outbox/` unless a sandbox repo is configured).
 
@@ -169,7 +176,7 @@ echo "FALKORDB_LITE_PATH=.falkordb/lite.db" >> .env
 Connect an agent over MCP (Claude Code shown; any MCP client works):
 
 ```bash
-claude mcp add blast-radius -- uv run --directory "$PWD" blast-mcp
+claude mcp add hijack-radar -- uv run --directory "$PWD" blast-mcp
 ```
 
 ### One graph per company

@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CACHE = ROOT / "data" / "cache"
 BATCH = 1000
 CONCURRENCY = 16
-HEADERS = {"User-Agent": "supply-chain-blast-radius (hackathon project)"}
+HEADERS = {"User-Agent": "hijack-radar (hackathon project)"}
 
 
 def chunks(items: list, n: int = BATCH):

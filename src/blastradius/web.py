@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 from redis.exceptions import RedisError
 
 from . import queries as Q
-from .agent import EFFORT, MODEL, Agent
+from .agent import EFFORT, MODEL, PROVIDER, Agent
 from .db import graph_name, rows, tenants, use_tenant
 
 STATIC = Path(__file__).parent / "web"
@@ -68,7 +68,7 @@ async def lifespan(_app: FastAPI):
         yield
 
 
-app = FastAPI(title="Supply-chain blast radius", lifespan=lifespan)
+app = FastAPI(title="Hijack Radar", lifespan=lifespan)
 
 
 class ChatRequest(BaseModel):
@@ -115,6 +115,7 @@ def health(tenant: str = "") -> dict:
         "nodes": nodes,
         "edges": edges,
         "graph_error": graph_error,
+        "provider": PROVIDER,
         "model": MODEL,
         "effort": EFFORT,
         "tools": len(agent.tools),

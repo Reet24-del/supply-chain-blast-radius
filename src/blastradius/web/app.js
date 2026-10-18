@@ -8,12 +8,12 @@ const input = $('#q');
 const send = $('#send');
 
 const EXAMPLES = [
-  'Which of our repos install debug, and how many declare it directly?',
-  'MAL-2025-46974 just dropped. Are we affected?',
   'If the npm account qix were phished, what would it reach?',
-  'What are the worst advisories reaching expensify-app, and who owns it?',
+  'MAL-2025-46974 just dropped. Are we affected?',
+  'Which of our repos install debug, and how many declare it directly?',
   'Where is our next xz?',
   'We will pin debug with overrides everywhere. Remember that, and draft an issue for jitsi-meet.',
+  'What are the worst advisories reaching expensify-app, and who owns it?',
 ];
 
 // Headline numbers pulled out of tool results, in display order.

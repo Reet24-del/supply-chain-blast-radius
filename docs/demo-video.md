@@ -20,10 +20,10 @@ Record the chat UI at 1920×1080, browser zoom 110%, bookmarks bar hidden. Each 
 | 1:05–1:20 | *If the npm account qix were phished, what would it reach?* | "Maintainers are nodes too. One account publishes 7 packages that reach all 17 repos." | The packages list and the graph |
 | 1:20–1:35 | *Where is our next xz?* | "PageRank over the dependency graph, filtered to packages with a single maintainer: the load-bearing ones nobody watches." | The table rows |
 | 1:35–1:50 | *We will pin debug with overrides everywhere. Remember that, and draft an issue for jitsi-meet.* | "Decisions become dated nodes in the graph, and the agent drafts the fix for the owning team." | The "recorded" and "drafted" badges |
-| 1:50–2:00 | FalkorDB Browser running the `blast_radius` query, or the README architecture diagram | "Thirteen MCP tools, every query written by us, never by the model, and every answer carries its path. Built on FalkorDB." | End card: repo URL |
+| 1:50–2:00 | FalkorDB Browser running the `blast_radius` query, or the README architecture diagram | "Hijack Radar: thirteen MCP tools, every query written by us, never by the model, and every answer carries its path. Built on FalkorDB." | End card: repo URL |
 
 ## Optional cut-ins (if time allows)
 
 - **Track 02 isolation (15 s):** switch the Company picker to `orbit` and ask the `debug` question again: "Orbit gets its own graph. 5 repos, none declare debug, all 5 install it, and Orbit's decisions never show up for anyone else."
 - The "memory" table on a follow-up `debug` question, showing the decision recalled with who and when.
-- The same MCP tools inside Claude Code (`claude mcp add blast-radius -- uv run --directory "$PWD" blast-mcp`), to show the agent isn't tied to our UI.
+- The same MCP tools inside Claude Code (`claude mcp add hijack-radar -- uv run --directory "$PWD" blast-mcp`), to show the agent isn't tied to our UI.

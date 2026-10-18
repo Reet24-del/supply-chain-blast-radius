@@ -18,7 +18,7 @@ owning teams, and past triage decisions.
 - For a hijacked release that no lockfile pins yet, use fresh_install_exposure.
 """
 
-server = MCPServer(name="supply-chain-blast-radius", instructions=INSTRUCTIONS)
+server = MCPServer(name="hijack-radar", instructions=INSTRUCTIONS)
 for fn in tools.READ_TOOLS:
     server.add_tool(fn, annotations=ToolAnnotations(readOnlyHint=True))
 for fn in tools.WRITE_TOOLS:

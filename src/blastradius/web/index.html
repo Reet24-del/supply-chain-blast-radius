@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Blast Radius</title>
+  <title>Hijack Radar</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
@@ -15,8 +15,8 @@
 <body>
   <header>
     <div class="brand">
-      <strong>Blast Radius</strong>
-      <span>npm supply-chain incident agent on FalkorDB</span>
+      <strong>Hijack Radar</strong>
+      <span>phished maintainers and hijacked npm releases, traced on FalkorDB</span>
     </div>
     <div class="meta">
       <label id="tenant-picker" hidden>Company <select id="tenant"></select></label>
@@ -28,9 +28,9 @@
 
   <main id="conversation">
     <section id="empty" class="empty">
-      <h1>A package or maintainer is compromised. Who is hit?</h1>
-      <p>Ask about any package, advisory, maintainer or repo. Every answer shows the dependency paths the graph found.</p>
-      <p id="setup" class="notice error" hidden>Chat needs an Anthropic API key: add ANTHROPIC_API_KEY to .env, then restart blast-web.</p>
+      <h1>An npm maintainer was phished. What did you install?</h1>
+      <p>Ask about a maintainer, a hijacked release, an advisory or a repo. Every answer shows the dependency paths the graph found, including the ones your lockfile hides.</p>
+      <p id="setup" class="notice error" hidden>Chat needs a model API key: add GROQ_API_KEY (free at console.groq.com) or ANTHROPIC_API_KEY to .env, then restart blast-web.</p>
       <div id="examples" class="examples"></div>
     </section>
   </main>

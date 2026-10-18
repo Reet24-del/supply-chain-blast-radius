@@ -1,6 +1,6 @@
-# Your package.json says you're safe. Your dependency graph disagrees.
+# Hijack Radar: your lockfile says you're safe. Your dependency graph disagrees.
 
-*How we built a supply-chain incident agent on FalkorDB for Graph Hacks 2026, and why the answer to "were we hit?" is a graph traversal, not a search.*
+*How we built an agent that traces phished npm maintainers and hijacked releases through FalkorDB for Graph Hacks 2026, and why "were we hit?" is a graph traversal, not a search.*
 
 <!-- Screenshot: the chat UI with the 17-repo fan-in graph for `debug`. -->
 
@@ -14,13 +14,12 @@ The obvious way to answer is to search your repos for `debug` in `package.json`.
 
 ## What we built
 
-**Blast Radius** is an agent that answers supply-chain questions from a FalkorDB graph of real, installed dependency trees:
+**Hijack Radar** is an agent for the attacks CVE scanners weren't built for: account takeovers and hijacked releases. It answers from a FalkorDB graph of real, installed dependency trees:
 
-- *Which repos install this package, at any depth, and through which path?*
-- *A new advisory (GHSA, CVE or malicious-package ID) just dropped. Are we affected?*
-- *If this npm account were phished, what could the attacker publish into?*
-- *Would our next `npm update` pull in the hijacked release?*
+- *If this npm account were phished, what could the attacker publish into our repos?*
+- *Would our next `npm update` pull in the hijacked release, even though no lockfile pins it yet?*
 - *Where is our next xz: which packages sit under everything but have one maintainer?*
+- *Which repos install this package or advisory, at any depth, and through which path?*
 
 Every answer comes with the dependency paths that produced it, drawn next to the answer.
 
