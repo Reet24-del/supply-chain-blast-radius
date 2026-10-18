@@ -6,24 +6,24 @@
   <title>Hijack Radar</title>
   <style>
     :root {
-      --bg: #f2eee4; --panel: #faf8f2; --text: #1f1d18; --muted: #6e675a; --border: #d8d0bf;
-      --grid: #cdc4b1; --sweep: #1f1d18; --safe: #b4ab99; --hit: #d1460f; --hit-glow: transparent;
-      --accent: #1f1d18; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+      --bg: #060a22; --panel: #0c1338; --text: #e8ecff; --muted: #8f99c9; --border: #1e2a63;
+      --grid: #1e2a63; --sweep: #4d7cff; --safe: #3a4a8c; --hit: #ff5d6c; --hit-glow: transparent;
+      --accent: #4d7cff; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; background-color: var(--bg); background-image: linear-gradient(#e6dfd0 1px, transparent 1px), linear-gradient(90deg, #e6dfd0 1px, transparent 1px); background-size: 28px 28px; color: var(--text);
+    body { margin: 0; background-color: var(--bg); background-image: radial-gradient(ellipse 80% 50% at 40% 115%, rgba(77, 124, 255, 0.28), transparent 70%); background-attachment: fixed; color: var(--text);
            font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; min-height: 100vh; }
     header { display: flex; justify-content: space-between; align-items: center; padding: 16px 28px; }
     header strong { font-size: 18px; letter-spacing: 0.02em; }
     header strong span { color: var(--hit); }
     a.cta, button { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--border); }
-    a.cta { color: var(--bg); background: var(--accent); padding: 9px 16px; text-decoration: none; font-weight: 600; border: 0; }
+    a.cta { color: #fff; background: var(--accent); padding: 9px 16px; text-decoration: none; font-weight: 600; border: 0; }
     main { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 32px; align-items: center;
            max-width: 1240px; margin: 0 auto; padding: 8px 28px 40px; }
     @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
     svg { width: 100%; height: auto; max-width: 620px; display: block; margin: 0 auto; overflow: visible; }
     .ring { fill: none; stroke: var(--grid); stroke-width: 1; }
-    .ring-label { fill: #9a907e; font: 10px var(--mono); }
+    .ring-label { fill: #5b6aa8; font: 10px var(--mono); }
     .spoke { stroke: var(--grid); stroke-width: 0.6; }
     .dot { fill: var(--safe); transition: fill 0.3s, r 0.3s; }
     .dot.hit { fill: var(--hit); }
@@ -32,7 +32,7 @@
     .core { fill: var(--hit); }
     .core-label { fill: var(--text); font: 600 11px var(--mono); }
     .pulse { fill: none; stroke: var(--hit); opacity: 0; }
-    h1 { font-family: Georgia, 'Iowan Old Style', 'Times New Roman', serif; font-weight: 600; font-size: 42px; line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.02em; }
+    h1 { font-weight: 500; font-size: 40px; line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.02em; }
     h1 em { font-style: normal; color: var(--hit); }
     .lede { color: var(--muted); margin: 0 0 22px; font-size: 16px; }
     .scenarios { display: grid; gap: 8px; margin-bottom: 22px; }
@@ -45,7 +45,7 @@
     .sub b { color: var(--text); }
     .path { font: 12.5px var(--mono); background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
             padding: 10px 12px; min-height: 42px; color: var(--muted); overflow-wrap: anywhere; }
-    .path .repo { color: #1f4e79; font-weight: 600; } .path .bad { color: var(--hit); } .path .sep { color: #9a907e; margin: 0 6px; }
+    .path .repo { color: #7fa2ff; font-weight: 600; } .path .bad { color: var(--hit); } .path .sep { color: #5b6aa8; margin: 0 6px; }
     footer { text-align: center; color: var(--muted); font-size: 13px; padding: 0 20px 28px; }
     footer b { color: var(--text); }
   </style>
@@ -92,12 +92,12 @@
     // sweep wedge with a fading gradient
     const defs = el('defs', {});
     const grad = el('linearGradient', { id: 'sweep', x1: '0', y1: '0', x2: '1', y2: '0' }, defs);
-    el('stop', { offset: '0%', 'stop-color': '#1f1d18', 'stop-opacity': '0' }, grad);
-    el('stop', { offset: '100%', 'stop-color': '#1f1d18', 'stop-opacity': '0.16' }, grad);
+    el('stop', { offset: '0%', 'stop-color': '#4d7cff', 'stop-opacity': '0' }, grad);
+    el('stop', { offset: '100%', 'stop-color': '#4d7cff', 'stop-opacity': '0.35' }, grad);
     const sweep = el('g', {});
     const W = 300, A = (40 * Math.PI) / 180;
     el('path', { d: `M0 0 L${W} 0 A${W} ${W} 0 0 0 ${W * Math.cos(-A)} ${W * Math.sin(-A)} Z`, fill: 'url(#sweep)' }, sweep);
-    el('line', { x1: 0, y1: 0, x2: W, y2: 0, stroke: '#1f1d18', 'stroke-width': 1.2 }, sweep);
+    el('line', { x1: 0, y1: 0, x2: W, y2: 0, stroke: '#4d7cff', 'stroke-width': 1.4 }, sweep);
 
     const pulse = el('circle', { r: 20, class: 'pulse' });
     el('circle', { r: 16, class: 'core' });

@@ -436,4 +436,9 @@ $('#tenant').addEventListener('change', (e) => {
 $('#new').addEventListener('click', () => {
   if (!busy) location.reload();
 });
+const greet = $('#greet');
+if (greet) {
+  const hour = new Date().getHours();
+  greet.textContent = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+}
 loadHealth();
