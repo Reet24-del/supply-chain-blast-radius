@@ -11,7 +11,7 @@ CVE scanners answer "which of my pinned versions is vulnerable?". Hijack Radar a
 - **"Would our next `npm update` install the hijacked release?"** Every dependency edge stores its semver range, so the agent finds the ranges that accept the bad version, even when no lockfile pins it yet. That is exactly the Sept 2025 attack.
 - **"Where is our next xz?"** PageRank over the dependency graph, filtered to packages that a single npm account controls.
 
-> Demo video: TODO · Live demo: TODO · Blog post: TODO ([draft](docs/blog-post.md))
+> Demo video: TODO · Run it: [local setup](#run-it-locally) · Radar: `/radar.html` · Blog post: [draft](docs/blog-post.md)
 > Built for [Graph Hacks: Context for AI Agents](https://www.wemakedevs.org/hackathons/falkordb) (FalkorDB × WeMakeDevs).
 
 ## Why this needs a graph
@@ -57,7 +57,7 @@ npm registry maintainers ──┘                   (graph)     (all Cypher)  (
                                                                                                        (Claude Code, Claude Desktop)
 ```
 
-**The web agent** ([`agent.py`](src/blastradius/agent.py)) is an MCP client of the same server external clients use. It runs a streaming tool-use loop on `claude-opus-5-5`: adaptive thinking, effort `medium` (`BLAST_EFFORT`), prompt caching, append-only history, and server-side refusal fallbacks (`fallbacks: "default"`). Each step streams to the browser as newline-delimited JSON. The UI ([`web/`](src/blastradius/web/)) draws the dependency paths from the **tool results**, not from the model's text, beside each answer. So the evidence panel shows exactly what the graph returned.
+**The web agent** ([`agent.py`](src/blastradius/agent.py)) is an MCP client of the same server external clients use. It runs a streaming tool-use loop on **Groq** (`openai/gpt-oss-120b`, free tier) by default, or on **Claude** (`claude-opus-5-5`) if you set `ANTHROPIC_API_KEY` and `LLM_PROVIDER=anthropic`. History is append-only, and the model reads only the first rows of long tool results, plus a count. Each step streams to the browser as newline-delimited JSON. The UI ([`web/`](src/blastradius/web/)) draws the dependency paths from the **tool results**, not from the model's text, beside each answer. So the evidence panel shows exactly what the graph returned.
 
 Design rules:
 
@@ -165,7 +165,7 @@ uv sync
 uv run blast-ingest --reset          # ~3 min the first time (mostly npm maintainers), then cached
 uv run python scripts/demo.py        # the demo storyline, read-only
 uv run python scripts/demo.py --act  # also records a decision and drafts an issue
-uv run blast-web                     # chat UI on http://localhost:8000 (needs ANTHROPIC_API_KEY in .env)
+uv run blast-web                     # chat UI on http://localhost:8000 (needs GROQ_API_KEY in .env, free at console.groq.com)
 ```
 
 No Docker? Use the embedded engine (Python 3.12+):
@@ -206,7 +206,7 @@ The default graph needs about 19 MB of the tier's 100 MB, and Orbit's is about a
 - There's **no persistence**: a restart empties the graph, so re-run the command above.
 - An instance unused for a day is stopped, and after 7 days it's deleted. The keep-alive below prevents that.
 
-**2. The app, on Render (free).** In the Render dashboard, choose New > Blueprint and pick this repo. Render reads [`render.yaml`](render.yaml), builds the [`Dockerfile`](Dockerfile), and asks once for `ANTHROPIC_API_KEY`, `FALKORDB_HOST`, `FALKORDB_PORT` and `FALKORDB_PASSWORD`. `/api/health` shows the graph's node counts; if the graph is empty or unreachable, `graph_error` says why. A free instance sleeps after 15 minutes idle, so the next visit takes about a minute. The same image runs on any container host: set the same variables, and it listens on `$PORT`.
+**2. The app, on Render (free).** In the Render dashboard, choose New > Blueprint and pick this repo. Render reads [`render.yaml`](render.yaml), builds the [`Dockerfile`](Dockerfile), and asks once for `GROQ_API_KEY`, `FALKORDB_HOST`, `FALKORDB_PORT` and `FALKORDB_PASSWORD`. `/api/health` shows the graph's node counts; if the graph is empty or unreachable, `graph_error` says why. A free instance sleeps after 15 minutes idle, so the next visit takes about a minute. The same image runs on any container host: set the same variables, and it listens on `$PORT`.
 
 **3. Limits and keep-alive.**
 
@@ -222,7 +222,7 @@ The default graph needs about 19 MB of the tier's 100 MB, and Orbit's is about a
 
 ## AI assistance
 
-This project was built during the event (October 16–18, 2026) with **Claude Code** (Anthropic) as a coding assistant. It helped choose the idea, then wrote most of the first version from our direction: the lockfile parser and ingestion, the Cypher queries, the MCP tools, the agent loop, the web UI, the deployment config, and drafts of this README and the blog post. At runtime, the web agent calls Claude (`claude-opus-5-5`).
+This project was built during the event (October 16–18, 2026) with **Claude Code** (Anthropic) as a coding assistant. It helped choose the idea, then wrote most of the first version from our direction: the lockfile parser and ingestion, the Cypher queries, the MCP tools, the agent loop, the web UI, the deployment config, and drafts of this README and the blog post. At runtime, the web agent calls Groq (`openai/gpt-oss-120b`), or Claude if configured.
 
 <!-- TEAM: before submitting, replace this line with what you wrote, reviewed, tested or changed
      yourselves, in your own words. The rules ask that you can explain the graph model, the
@@ -232,7 +232,7 @@ _What we did ourselves: TODO._
 ## Before submitting
 
 - [x] Agent loop and UI: chat on the left, the hop-by-hop path rendered on the right
-- [ ] Run the chat once with a real `ANTHROPIC_API_KEY` and tune the system prompt in `agent.py`
+- [x] Run the six demo questions on a real model (Groq) and tune the system prompt
 - [ ] Deploy: create the FalkorDB Cloud instance, load the graph, create the Render Blueprint, set `APP_URL` (see Deploy)
 - [ ] 2-minute demo video following `scripts/demo.py`
 - [ ] Blog post (separate prize)
