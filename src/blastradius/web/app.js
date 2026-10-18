@@ -8,12 +8,10 @@ const input = $('#q');
 const send = $('#send');
 
 const EXAMPLES = [
-  'If the npm account qix were phished, what would it reach?',
+  'If npm account qix were phished, what would it reach?',
   'MAL-2025-46974 just dropped. Are we affected?',
-  'Which of our repos install debug, and how many declare it directly?',
+  'Which repos install debug?',
   'Where is our next xz?',
-  'We will pin debug with overrides everywhere. Remember that, and draft an issue for jitsi-meet.',
-  'What are the worst advisories reaching expensify-app, and who owns it?',
 ];
 
 // Headline numbers pulled out of tool results, in display order.
@@ -26,7 +24,7 @@ const FACTS = {
   repos_affected: 'repos affected',
   packages_maintained: 'packages maintained',
 };
-const QUIET_KEYS = new Set(['outcome', 'query_ms', 'note', 'error', 'suggestions', 'query']);
+const SHOWN_SCALARS = new Set(['team', 'oncall', 'channel', 'about', 'url']);
 
 // Each company (tenant) has its own isolated graph; the choice lives in the URL so it's linkable.
 const tenant = new URLSearchParams(location.search).get('tenant') || '';
@@ -81,7 +79,7 @@ function newTurn(question) {
     md: h('div', { class: 'md' }),
     status: h('div', { class: 'status', text: 'Thinking…' }),
     foot: h('div', { class: 'foot' }),
-    title: h('h3', { text: 'Evidence from the graph' }),
+    title: h('h3', { text: 'Evidence' }),
     graph: h('div', { class: 'graph', hidden: true }),
     callList: h('div'),
     paths: h('details', { class: 'paths', hidden: true }),
@@ -136,17 +134,10 @@ function handle(t, ev) {
       break;
     case 'done':
       t.status.hidden = true;
-      t.foot.textContent = footer(ev);
       break;
   }
 }
 
-function footer(ev) {
-  const u = ev.usage || {};
-  if (u.input_tokens == null) return ev.model || '';
-  const cached = fmt(u.cache_read_input_tokens || 0);
-  return `${ev.model} · ${fmt(u.input_tokens)} in (${cached} cached) / ${fmt(u.output_tokens)} out tokens`;
-}
 
 // ---------------------------------------------------------------- evidence: tool calls
 
@@ -177,7 +168,7 @@ function fillCard(t, ev) {
     .filter(([k]) => r[k] != null)
     .map(([k, label]) => h('span', { class: 'fact' }, h('b', { text: fmt(r[k]) }), ` ${label}`));
   const scalars = Object.entries(r)
-    .filter(([k, v]) => !(k in FACTS) && !QUIET_KEYS.has(k) && v != null && typeof v !== 'object')
+    .filter(([k, v]) => SHOWN_SCALARS.has(k) && v != null && typeof v !== 'object')
     .map(([k, v]) => h('span', { class: 'fact' }, `${k}: `, h('b', { text: String(v) })));
   if (facts.length || scalars.length) card.body.append(h('div', { class: 'facts' }, ...facts, ...scalars));
 
@@ -189,14 +180,14 @@ function fillCard(t, ev) {
       card.body.append(objectView(value));
     }
   }
-  const hints = [r.note, r.error, r.suggestions?.length ? `Did you mean: ${r.suggestions.join(', ')}?` : null];
+  const hints = [r.error, r.suggestions?.length ? `Did you mean: ${r.suggestions.join(', ')}?` : null];
   for (const text of hints) if (text) card.body.append(h('p', { class: 'note', text }));
 }
 
 function listView(key, items) {
   if (typeof items[0] !== 'object') {
-    const shown = items.slice(0, 24).map((v) => h('span', { text: String(v) }));
-    const more = items.length > 24 ? h('em', { text: `+${items.length - 24} more` }) : null;
+    const shown = items.slice(0, 8).map((v) => h('span', { text: String(v) }));
+    const more = items.length > 8 ? h('em', { text: `+${items.length - 8} more` }) : null;
     return h('div', { class: 'chips' }, h('em', { text: `${key}:` }), ...shown, more);
   }
   // rows that carry a path are drawn in the graph; advisories also get a table for ids and severity
@@ -205,9 +196,9 @@ function listView(key, items) {
     (c) => c !== 'path' && (Array.isArray(items[0][c]) || typeof items[0][c] !== 'object' || items[0][c] === null),
   );
   const head = h('thead', {}, h('tr', {}, ...cols.map((c) => h('th', { text: c }))));
-  const body = h('tbody', {}, ...items.slice(0, 10).map((it) => h('tr', {}, ...cols.map((c) => h('td', { text: cell(it[c]) })))));
+  const body = h('tbody', {}, ...items.slice(0, 5).map((it) => h('tr', {}, ...cols.map((c) => h('td', { text: cell(it[c]) })))));
   const table = h('table', { class: 'mini' }, head, body);
-  return items.length > 10 ? h('div', {}, table, h('p', { class: 'note', text: `+${items.length - 10} more rows` })) : table;
+  return items.length > 5 ? h('div', {}, table, h('p', { class: 'note', text: `+${items.length - 5} more rows` })) : table;
 }
 
 function objectView(obj) {
@@ -237,7 +228,7 @@ function collectPaths(results) {
 function updateTitle(t, pathCount = collectPaths(t.results).length) {
   const n = t.calls.size;
   const detail = `· ${n} tool call${n === 1 ? '' : 's'}${pathCount ? ` · ${pathCount} paths` : ''}`;
-  t.title.replaceChildren('Evidence from the graph ', h('span', { text: detail }));
+  t.title.replaceChildren('Evidence ', h('span', { text: detail }));
 }
 
 function pathItem(path) {
@@ -385,9 +376,8 @@ async function loadHealth() {
       return;
     }
     $('#stats').textContent =
-      `${fmt(s.nodes.Repo)} repos · ${fmt(s.nodes.Version)} versions · ` +
-      `${fmt(s.edges.DEPENDS_ON)} dependency edges · ${fmt(s.nodes.Advisory)} advisories`;
-    $('#model').textContent = `${s.model} · ${s.tools} MCP tools`;
+      `${fmt(s.nodes.Repo)} repos · ${fmt(s.edges.DEPENDS_ON)} dependency edges`;
+    $('#model').textContent = `${s.model.split('/').pop()} on FalkorDB`;
     const setup = $('#setup');
     if (setup) setup.hidden = s.llm_ready;
   } catch {

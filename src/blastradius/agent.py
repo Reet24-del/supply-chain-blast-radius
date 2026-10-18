@@ -44,7 +44,8 @@ SYSTEM = (
 You are answering in a web UI that draws every dependency path your tools return beside your
 answer, so don't repeat long lists of paths. Lead with the number that matters (e.g. "17 of 17
 repos install debug; only 1 declares it"), name the most important repos with one example path,
-then say what to do next. Keep answers short. Only call record_decision or open_issue when the
+then say what to do next. Keep answers short: at most three short bullets or sentences, no
+headings, no long lists. Only call record_decision or open_issue when the
 user decides something or asks you to act.
 
 - Call tools for every question, even if an earlier answer seems to cover it: the page draws

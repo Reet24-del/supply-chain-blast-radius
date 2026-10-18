@@ -59,14 +59,13 @@
     <svg id="radar" viewBox="-330 -330 660 660" role="img" aria-label="Radar of the 17 repos; rings are dependency hops from the compromised package"></svg>
     <section>
       <h1>A maintainer gets phished.<br><em>What did you just install?</em></h1>
-      <p class="lede">Each dot is one of 17 real open-source repos. Each ring is one dependency hop from the compromised package. Pick an attack and watch the sweep.</p>
       <div class="scenarios" id="scenarios"></div>
       <div class="counter" id="counter">0<small> / 17 repos exposed</small></div>
       <p class="sub" id="sub">&nbsp;</p>
-      <div class="path" id="path">Hover a red dot to see the exact path the graph found.</div>
+      <div class="path" id="path">Hover a red dot to see its path.</div>
     </section>
   </main>
-  <footer>Traced through a <b>FalkorDB</b> graph of real lockfiles: 11,179 package versions · 33,233 dependency edges · every answer shows its path.</footer>
+  <footer>Built on <b>FalkorDB</b> · 33,233 dependency edges from real lockfiles</footer>
 
   <script>
     const NS = 'http://www.w3.org/2000/svg';
@@ -154,10 +153,10 @@
       }
       const direct = dots.filter((d) => d.hit && d.hit.depth === 1).length;
       document.getElementById('sub').innerHTML = s.kind === 'release'
-        ? `No lockfile pins it, yet <b>${s.ranges} version ranges</b> accept it: the next <code>npm update</code> pulls it in.`
-        : `<b>${s.packages} packages</b> this account can publish · only <b>${direct}</b> repos depend on one directly.`;
+        ? `No lockfile pins it. <b>${s.ranges} ranges</b> accept it.`
+        : `<b>${s.packages} packages</b> · only <b>${direct}</b> direct.`;
       document.getElementById('counter').firstChild.textContent = '0';
-      document.getElementById('path').textContent = 'Hover a red dot to see the exact path the graph found.';
+      document.getElementById('path').textContent = 'Hover a red dot to see its path.';
     }
 
     function frame() {

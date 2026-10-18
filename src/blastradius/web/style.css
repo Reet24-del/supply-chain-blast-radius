@@ -81,7 +81,25 @@ button:disabled { opacity: 0.5; cursor: default; }
 .main { margin-left: var(--side); }
 main { max-width: 1240px; margin: 0 auto; padding: 28px 24px 170px; }
 
-.empty { text-align: center; padding: 14vh 0 24px; }
+.empty { text-align: center; padding: 10vh 0 24px; }
+.empty h1 { margin-bottom: 28px !important; }
+.hero-radar {
+  position: relative; width: 132px; height: 132px; margin: 0 auto 26px; border-radius: 50%;
+  border: 1px solid var(--border); overflow: hidden;
+  background: repeating-radial-gradient(circle, transparent 0 21px, rgba(77, 124, 255, 0.22) 21px 22px);
+}
+.hero-radar .sweep {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(77, 124, 255, 0.55), transparent 70deg);
+  animation: spin 3.2s linear infinite;
+}
+.hero-radar i {
+  position: absolute; left: var(--x); top: var(--y); width: 8px; height: 8px; border-radius: 50%;
+  background: var(--node-target); animation: blip 3.2s ease-out infinite; animation-delay: var(--d, 0s);
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes blip { 0%, 60% { opacity: 0.15; transform: scale(0.6); } 70% { opacity: 1; transform: scale(1.3); } 100% { opacity: 0.35; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .hero-radar .sweep, .hero-radar i { animation: none; } }
 .greet { font-size: 30px; margin: 0; font-weight: 500; }
 .empty h1 { font-size: 30px; margin: 0 0 14px; font-weight: 500; color: var(--muted); letter-spacing: -0.01em; }
 .lede { color: var(--muted); margin: 0 auto 26px; max-width: 620px; }

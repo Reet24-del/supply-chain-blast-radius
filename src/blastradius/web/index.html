@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hijack Radar</title>
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.12/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.6/purify.min.js"></script>
-  <script src="app.js?v=3" defer></script>
+  <script src="app.js?v=4" defer></script>
 </head>
 <body>
   <aside class="sidebar">
@@ -30,9 +30,9 @@
   <div class="main">
     <main id="conversation">
       <section id="empty" class="empty">
+        <div class="hero-radar" aria-hidden="true"><span class="sweep"></span><i style="--x:62%;--y:28%"></i><i style="--x:30%;--y:62%;--d:.6s"></i><i style="--x:70%;--y:70%;--d:1.2s"></i></div>
         <p id="greet" class="greet">Good evening</p>
         <h1>Which repos would a phished maintainer reach?</h1>
-        <p class="lede">Ask about a maintainer, a hijacked release, an advisory or a repo. Every answer shows the dependency paths the graph found, including the ones your lockfile hides.</p>
         <p id="setup" class="notice error" hidden>Chat needs a model API key: add GROQ_API_KEY (free at console.groq.com) or ANTHROPIC_API_KEY to .env, then restart blast-web.</p>
         <div id="examples" class="examples"></div>
       </section>
@@ -40,7 +40,7 @@
 
     <div class="dock">
       <form id="ask">
-        <textarea id="q" rows="1" placeholder="Ask anything about a package, maintainer, advisory or repo…" aria-label="Question"></textarea>
+        <textarea id="q" rows="1" placeholder="Ask about a package, maintainer or repo…" aria-label="Question"></textarea>
         <button id="send" type="submit" aria-label="Ask">Ask</button>
       </form>
     </div>
