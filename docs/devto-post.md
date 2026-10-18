@@ -106,6 +106,19 @@ This track asks for agents that remember across sessions and keep separate memor
 
 {% github Reet24-del/supply-chain-blast-radius %}
 
-The README has the graph model, every Cypher query the product depends on, and a local setup that runs with embedded FalkorDB, no Docker needed. You need a free Groq key for the chat.
+The README has the graph model and every Cypher query the product depends on.
+
+**Run it locally.** Hijack Radar runs on your own machine with an embedded FalkorDB engine, no Docker and no cloud account needed:
+
+```bash
+git clone https://github.com/Reet24-del/supply-chain-blast-radius && cd supply-chain-blast-radius
+uv sync --extra lite
+echo "FALKORDB_LITE_PATH=.falkordb/lite.db" >> .env
+echo "GROQ_API_KEY=your-free-key" >> .env     # free at console.groq.com
+uv run blast-ingest --reset                    # loads the 17 real lockfiles (~3 min the first time)
+uv run blast-web                               # http://localhost:8000, plus /radar.html
+```
+
+Prefer Docker? `docker compose up -d` starts FalkorDB with its browser UI, and the same code also runs against FalkorDB Cloud.
 
 *Built for **Graph Hacks: Context for AI Agents** (FalkorDB × WeMakeDevs), October 2026. Built with Claude Code as a coding assistant, as disclosed in the README.*
