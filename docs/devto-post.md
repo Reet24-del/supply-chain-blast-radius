@@ -7,7 +7,7 @@ tags: ai, security, graphdatabase, hackathon
 
 ## Monday, September 8, 2025
 
-A maintainer of some of the most-used packages on npm gets an email. It says his two-factor settings need updating before the 10th. The link looks like npm. It isn't.
+A maintainer of some of the most-used packages on npm gets an email. It says their two-factor settings need updating before the 10th. The link looks like npm. It isn't.
 
 Minutes later, new versions of 18 packages appear on the registry, `chalk` and `debug` among them. Together they're downloaded about **2.6 billion times a week**. The new code quietly rewrites crypto wallet transactions in the browser. The bad versions are pulled within hours, but every engineering team spends that afternoon asking the same question:
 
