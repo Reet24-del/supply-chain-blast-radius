@@ -301,8 +301,9 @@ def record_decision(about: str, kind: str, decision: str, by: str, status: str =
 
 
 def open_issue(repo: str, title: str, body: str) -> dict:
-    """Open a remediation issue addressed to the repo's owning team. Posts to the sandbox repo in
-    DEMO_ISSUES_REPO when GITHUB_TOKEN is set; otherwise writes a draft to outbox/."""
+    """Draft (or open) a remediation issue for a repo's owning team: use this whenever the user
+    asks to draft, write, open or file an issue. Posts to the sandbox repo in DEMO_ISSUES_REPO when
+    GITHUB_TOKEN is set; otherwise saves the draft to outbox/."""
     name, suggestions = _resolve("repo", repo)
     if not name:
         return _unknown("repo", repo, suggestions)

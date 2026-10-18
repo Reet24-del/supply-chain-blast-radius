@@ -29,7 +29,7 @@ def _provider() -> str:
 
 PROVIDER = _provider()
 MODEL = os.getenv("BLAST_MODEL") or {"anthropic": "claude-opus-5-5", "groq": "openai/gpt-oss-120b"}[PROVIDER]
-EFFORT = os.getenv("BLAST_EFFORT") or {"anthropic": "medium", "groq": "low"}[PROVIDER]
+EFFORT = os.getenv("BLAST_EFFORT") or {"anthropic": "medium", "groq": "medium"}[PROVIDER]
 MAX_TOOL_ROUNDS = 8
 MAX_TOKENS = 64000
 # Anthropic: on a safety decline, the API re-runs the request on a fallback model.
@@ -46,6 +46,15 @@ answer, so don't repeat long lists of paths. Lead with the number that matters (
 repos install debug; only 1 declares it"), name the most important repos with one example path,
 then say what to do next. Keep answers short. Only call record_decision or open_issue when the
 user decides something or asks you to act.
+
+- Call tools for every question, even if an earlier answer seems to cover it: the page draws
+  evidence only from this turn's tool results.
+- "Who installs / uses / depends on X": call blast_radius (any depth). If they also ask how many
+  declare it, call direct_dependents too and contrast the two numbers.
+- "Draft / open / file an issue": call open_issue for that repo, don't just write it in chat. Say what
+  you actually did: open_issue drafts an issue; it doesn't change any repo.
+- Long lists in tool results show only the first rows plus a *_not_shown count; the page shows
+  every row. Quote totals (e.g. repos_reached), not how many rows you were shown.
 """
 )
 
